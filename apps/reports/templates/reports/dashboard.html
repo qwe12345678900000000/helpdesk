@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Дашборд — Система регистрации обращений</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; background: #f3f5f9; color: #1f2937; }
+  header { background: #0f3d5e; color: #fff; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
+  header a { color: #cfe6f7; margin-left: 16px; text-decoration: none; }
+  main { padding: 24px 32px; }
+  .cards { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-bottom: 24px; }
+  .card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .card .num { font-size: 32px; font-weight: bold; color: #0f3d5e; }
+  .card.red .num { color: #dc2626; }
+  .card .lbl { font-size: 13px; color: #6b7280; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 14px; }
+  th { background: #e8f1f8; }
+  h2 { font-size: 18px; margin: 24px 0 8px; }
+  .bar { height: 10px; background: #0f7a8a; border-radius: 5px; }
+</style>
+</head>
+<body>
+<header>
+  <strong>Система регистрации обращений — дашборд</strong>
+  <span>{{ request.user }}<a href="/admin/">Панель управления</a><a href="/api/">API</a></span>
+</header>
+<main>
+  <div class="cards">
+    <div class="card"><div class="num">{{ kpi.total }}</div><div class="lbl">Всего обращений</div></div>
+    <div class="card"><div class="num">{{ kpi.open }}</div><div class="lbl">Открытых</div></div>
+    <div class="card red"><div class="num">{{ kpi.overdue }}</div><div class="lbl">Просрочено</div></div>
+    <div class="card"><div class="num">{{ kpi.created_today }}</div><div class="lbl">Поступило сегодня</div></div>
+    <div class="card"><div class="num">{{ kpi.avg_resolution_hours }} ч</div><div class="lbl">Среднее время решения</div></div>
+    <div class="card"><div class="num">{% if kpi.sla_compliance_percent is not None %}{{ kpi.sla_compliance_percent }}%{% else %}—{% endif %}</div><div class="lbl">Решено в срок (SLA)</div></div>
+  </div>
+  <div class="grid">
+    <div>
+      <h2>По статусам</h2>
+      <table><tr><th>Статус</th><th>Количество</th></tr>
+      {% for s in kpi.by_status %}<tr><td>{{ s.label }}</td><td>{{ s.count }}</td></tr>{% endfor %}
+      </table>
+      <h2>По категориям</h2>
+      <table><tr><th>Категория</th><th>Всего</th><th>Открыто</th><th>Просрочено</th></tr>
+      {% for c in by_category %}<tr><td>{{ c.category }}</td><td>{{ c.total }}</td><td>{{ c.open }}</td><td>{{ c.overdue }}</td></tr>{% endfor %}
+      </table>
+    </div>
+    <div>
+      <h2>Нагрузка исполнителей</h2>
+      <table><tr><th>Исполнитель</th><th>Всего</th><th>В работе</th><th>Просрочено</th><th>Решено</th></tr>
+      {% for e in by_executor %}<tr><td>{{ e.executor }}</td><td>{{ e.total }}</td><td>{{ e.open }}</td><td>{{ e.overdue }}</td><td>{{ e.resolved }}</td></tr>{% endfor %}
+      </table>
+      <h2>Просроченные обращения</h2>
+      <table><tr><th>Номер</th><th>Тема</th><th>Исполнитель</th><th>Срок</th></tr>
+      {% for t in overdue %}<tr><td><a href="/admin/tickets/ticket/{{ t.id }}/change/">{{ t.code }}</a></td><td>{{ t.subject }}</td><td>{{ t.executor|default:"—" }}</td><td>{{ t.deadline|date:"d.m.Y H:i" }}</td></tr>
+      {% empty %}<tr><td colspan="4">Просроченных обращений нет</td></tr>{% endfor %}
+      </table>
+    </div>
+  </div>
+</main>
+</body>
+</html>

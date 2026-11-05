@@ -1,0 +1,8 @@
+Django==5.1.4                       # веб-фреймворк
+djangorestframework==3.15.2         # REST API
+djangorestframework-simplejwt==5.3.1  # JWT-авторизация
+django-filter==24.3                 # фильтрация в API
+drf-spectacular==0.28.0             # Swagger / OpenAPI
+psycopg2-binary==2.9.10             # драйвер PostgreSQL
+redis==5.2.0                        # клиент Redis (Memurai)
+python-dotenv==1.0.1                # чтение .env
